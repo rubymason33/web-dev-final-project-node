@@ -3,15 +3,20 @@ import mongoose from "mongoose";
 import cors from "cors";
 import "dotenv/config";
 import session from "express-session";
+import UserRoutes from "./Kambaz/Users/routes.js";
+import CourseRoutes from "./Kambaz/Courses/routes.js";
+import ModuleRoutes from "./Kambaz/Modules/routes.js";
+import AssignmentRoutes from './Kambaz/Assignments/routes.js';
 
-// const CONNECTION_STRING = process.env.MONGO_CONNECTION_STRING || "mongodb://127.0.0.1:27017/kambaz"
-// mongoose.connect(CONNECTION_STRING);
+const CONNECTION_STRING = process.env.MONGO_CONNECTION_STRING
+mongoose.connect(CONNECTION_STRING);
 
 const app = express();
 
 // configure for branch deploys
 const allowedOrigins = [
     process.env.NETLIFY_URL,
+    'http://localhost:5173',
 ];
 
 app.use(cors({
@@ -46,4 +51,8 @@ if (process.env.NODE_ENV !== "development") {
 }
 app.use(session(sessionOptions));
 app.use(express.json());
+UserRoutes(app);
+CourseRoutes(app);
+ModuleRoutes(app);
+AssignmentRoutes(app);
 app.listen(process.env.PORT || 4000);
