@@ -2,11 +2,11 @@ import { v4 as uuidv4 } from 'uuid';
 import model from "./model.js";
 
 export function findQuestionsForQuiz(quizId) {
-    model.find({ quiz: quizId}).sort({ order: 1 });
+    return model.find({ quiz: quizId}).sort({ order: 1 });
 }
 
 export function findQuestionById(questionId) {
-    model.findById(questionId);
+    return model.findById(questionId);
 }
 
 export function createQuestion(question) {
@@ -23,5 +23,5 @@ export function deleteQuestion(questionId) {
 }
 
 export function getQuestionCount(quizId) {
-    model.countDocuments({ quiz: quizId });
+    return model.countDocuments({ quiz: quizId });
 }
