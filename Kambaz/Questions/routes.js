@@ -21,7 +21,9 @@ export default function QuestionRoutes(app) {
         const newQuestion = await questionDao.createQuestion(questionData);
 
         const questions = await questionDao.findQuestionsForQuiz(quizId);
-        const totalPoints = questions.reduce((sum, q) => sum + (q.points || 0), 0) + (newQuestions.points || 0);
+        // const totalPoints = questions.reduce((sum, q) => sum + (q.points || 0), 0) + (newQuestion.points || 0);
+        const totalPoints = questions.reduce((sum, q) => sum + (q.points || 0), 0);
+
         await quizDao.updateQuiz(quizId, { points: totalPoints });
 
         res.status(201).json(newQuestion);
@@ -30,10 +32,21 @@ export default function QuestionRoutes(app) {
         }
     });
 
-    // get question by ID
-    app.get("/api/questoins/:questionId", async (req, res) => {
+    // get all questions for a quiz
+    app.get("/api/quizzes/:quizId/questions", async (req, res) => {
         try {
-            const { questoinId } = req.params;
+            const { quizId } = req.params;
+            const questions = await questionDao.findQuestionsForQuiz(quizId);
+            res.json(questions);
+        } catch (error) {
+            res.status(500);
+        }
+    });
+
+    // get question by ID
+    app.get("/api/questions/:questionId", async (req, res) => {
+        try {
+            const { questionId } = req.params;
             const question = await questionDao.findQuestionById(questionId);
 
             if (!question) {
@@ -69,7 +82,7 @@ export default function QuestionRoutes(app) {
     });
 
     // delete question
-    app.delete("api/questions/:questionId", async (req, res) => {
+    app.delete("/api/questions/:questionId", async (req, res) => {
         try {
             const currentUser = req.session["currentUser"];
             if (!currentUser || currentUser.role !== "FACULTY") {
@@ -93,4 +106,5 @@ export default function QuestionRoutes(app) {
             res.status(500);
         }
     });
+
 }
