@@ -5,6 +5,10 @@ export function findAllQuizzes() {
     return model.find({});
 }
 
+export function findQuizById(quizId) {
+    return model.findById(quizId);
+}
+
 export function findQuizzesForCourse(courseId) {
     return model.find({ course: courseId });
 }
