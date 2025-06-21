@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import model from "./model.js";
 
 export function findAttemptById(attemptId) {
-    return model.findById(attemptId); // Added return
+    return model.findById(attemptId);
 }
 
 export function createAttempt(attempt) {
@@ -11,27 +11,27 @@ export function createAttempt(attempt) {
 }
 
 export function updateAttempt(attemptId, attemptUpdates) {
-    return model.updateOne({ _id: attemptId }, { $set: attemptUpdates }); // Fixed typo: attemptUpdayes -> attemptUpdates, added return
+    return model.updateOne({ _id: attemptId }, { $set: attemptUpdates });
 }
 
 export function deleteAttempt(attemptId) {
-    return model.deleteOne({ _id: attemptId }); // Added return
+    return model.deleteOne({ _id: attemptId });
 }
 
 export function findAttemptsForStudentAndQuiz(studentId, quizId) {
-    return model.find({ student: studentId, quiz: quizId }).sort({ attemptNumber: -1 }); // Added return
+    return model.find({ student: studentId, quiz: quizId }).sort({ attemptNumber: -1 });
 }
 
 export function findLatestAttemptForStudentAndQuiz(studentId, quizId) {
-    return model.findOne({ student: studentId, quiz: quizId }).sort({ attemptNumber: -1 }); // Added return
+    return model.findOne({ student: studentId, quiz: quizId }).sort({ attemptNumber: -1 });
 }
 
 export function getAttemptCountForStudentAndQuiz(studentId, quizId) {
-    return model.countDocuments({ student: studentId, quiz: quizId }); // Added return
+    return model.countDocuments({ student: studentId, quiz: quizId });
 }
 
 export function findAttemptsForQuiz(quizId) {
-    return model.find({ quiz: quizId }).populate('student', 'firstName lastName username'); // Added return
+    return model.find({ quiz: quizId }).populate('student', 'firstName lastName username');
 }
 
 export const canStudentTakeQuiz = async (studentId, quizId, maxAttempts) => {
@@ -44,7 +44,7 @@ export const startNewAttempt = async (studentId, quizId) => {
     const newAttemptNumber = attemptCount + 1;
 
     const attempt = {
-        _id: uuidv4(), // Fixed typo: __id -> _id
+        _id: uuidv4(),
         quiz: quizId,
         student: studentId,
         attemptNumber: newAttemptNumber,
@@ -57,20 +57,19 @@ export const startNewAttempt = async (studentId, quizId) => {
     return model.create(attempt);
 };
 
-export function submitAttempt(attemptId, answers, score, totalPoints) {
-    const percentage = totalPoints > 0 ? Math.round((score / totalPoints) * 100) : 0;
-
-    return model.updateOne(
-        { _id: attemptId },
+export function submitAttempt(attemptId, gradedAnswers, totalScore, totalPoints, completedAt) {
+    return model.findByIdAndUpdate(
+        attemptId,
         {
             $set: {
-                answers,
-                score,
-                totalPoints,
-                percentage,
-                completedAt: new Date()
+                answers: gradedAnswers,
+                score: totalScore,
+                totalPoints: totalPoints,
+                percentage: Math.round((totalScore / totalPoints) * 100),
+                completedAt: completedAt || new Date()
             }
-        }
+        },
+        { new: true }
     );
 }
 
