@@ -1,4 +1,4 @@
-export { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import model from "./model.js";
 
 export function findAllQuizzes() {
@@ -15,13 +15,13 @@ export function createQuiz(quiz) {
 }
 
 export function updateQuiz(quizId, quizUpdates) {
-    model.updateOne({ _id: quizId}, { $set: quizUpdates });
+    return model.findByIdAndUpdate(quizId, { $set: quizUpdates }, { new: true });
 }
 
 export function deleteQuiz(quizId) {
-    model.deleteOne({ _id: quizId});
+    return model.deleteOne({ _id: quizId});
 }
 
 export function publishQuiz(quizId) {
-    model.updateOne({ _id: quizId}, { $set: { published: true } });
+    return model.updateOne({ _id: quizId}, { $set: { published: true } });
 }
