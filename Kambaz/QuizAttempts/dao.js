@@ -2,49 +2,49 @@ import { v4 as uuidv4 } from 'uuid';
 import model from "./model.js";
 
 export function findAttemptById(attemptId) {
-    model.findById(attemptId);
+    return model.findById(attemptId); // Added return
 }
 
 export function createAttempt(attempt) {
-    const newAttempt = {...attempt, _id: uuidv4() };
+    const newAttempt = { ...attempt, _id: uuidv4() };
     return model.create(newAttempt);
 }
 
 export function updateAttempt(attemptId, attemptUpdates) {
-    model.updateOne({ _id: attemptId }, { $set: attemptUpdayes });
+    return model.updateOne({ _id: attemptId }, { $set: attemptUpdates }); // Fixed typo: attemptUpdayes -> attemptUpdates, added return
 }
 
 export function deleteAttempt(attemptId) {
-    model.deleteOne({ _id: attemptId });
+    return model.deleteOne({ _id: attemptId }); // Added return
 }
 
 export function findAttemptsForStudentAndQuiz(studentId, quizId) {
-    model.find({ student: studentId, quiz: quizId}).sort({ attemptNumber: -1});
+    return model.find({ student: studentId, quiz: quizId }).sort({ attemptNumber: -1 }); // Added return
 }
 
 export function findLatestAttemptForStudentAndQuiz(studentId, quizId) {
-    model.findOne({ student: studentId, quiz: quizId}).sort({ attemptNumber: -1});
+    return model.findOne({ student: studentId, quiz: quizId }).sort({ attemptNumber: -1 }); // Added return
 }
 
 export function getAttemptCountForStudentAndQuiz(studentId, quizId) {
-    model.countDocuments({ student: studentId, quiz: quizId});
+    return model.countDocuments({ student: studentId, quiz: quizId }); // Added return
 }
 
 export function findAttemptsForQuiz(quizId) {
-    model.find({ quiz: quizId }).populate('student', 'firstName lastName username');
+    return model.find({ quiz: quizId }).populate('student', 'firstName lastName username'); // Added return
 }
 
 export const canStudentTakeQuiz = async (studentId, quizId, maxAttempts) => {
     const attemptCount = await getAttemptCountForStudentAndQuiz(studentId, quizId);
     return attemptCount < maxAttempts;
-}
+};
 
 export const startNewAttempt = async (studentId, quizId) => {
     const attemptCount = await getAttemptCountForStudentAndQuiz(studentId, quizId);
     const newAttemptNumber = attemptCount + 1;
 
     const attempt = {
-        __id: uuidv4(),
+        _id: uuidv4(), // Fixed typo: __id -> _id
         quiz: quizId,
         student: studentId,
         attemptNumber: newAttemptNumber,
@@ -55,7 +55,7 @@ export const startNewAttempt = async (studentId, quizId) => {
         startedAt: new Date()
     };
     return model.create(attempt);
-}
+};
 
 export function submitAttempt(attemptId, answers, score, totalPoints) {
     const percentage = totalPoints > 0 ? Math.round((score / totalPoints) * 100) : 0;
@@ -77,7 +77,7 @@ export function submitAttempt(attemptId, answers, score, totalPoints) {
 export function saveAnswers(attemptId, questionId, answer) {
     return model.updateOne(
         { _id: attemptId, "answers.question": questionId },
-        { $set: { "answers.$.answer": answer }}
+        { $set: { "answers.$.answer": answer } }
     );
 }
 
@@ -92,7 +92,7 @@ export function addAnswer(attemptId, questionId, answer) {
                     question: questionId,
                     answer: answer,
                     isCorrect: false,
-                    pointsEarner: 0
+                    pointsEarned: 0
                 }
             }
         }
