@@ -6,59 +6,65 @@ export default function QuizAttemptRoutes(app) {
     
     // start a new quiz attempt
     app.post("/api/quizzes/:quizId/attempts", async (req, res) => {
-        try {
-            const currentUser = req.session["currentUser"];
-
-            if (!currentUser || currentUser.role !== "STUDENT") {
-                return res.status(403);
-            }
-
-            const { quizId } = req.params;
-            const quiz = await quizDao.findQuizById(quizId);
-
-            if (!quiz) {
-                return res.status(404);
-            }
-
-            if (!quiz.published) {
-                return res.status(403);
-            }
-
-            const canTake = await attemptDao.canStudentTakeQuiz(currentUser._id, quizId, quiz.maxAttempts);
-            if (!canTake) {
-                return res.status(403);
-            }
-
-            const now = new Date();
-            if (quiz.availableDate && now < quiz.availableDate) {
-                return res.status(403);
-            }
-            if (quiz.untilDate && now > quiz.untilDate) {
-                return res.status(403);
-            }
-            const attempt = await attemptDao.startNewAttempt(currentUser._id, quizId);
-            res.status(201).json(attempt);
-        } catch (error) {
-        res.status(500);
+    try {
+        const currentUser = req.session["currentUser"];
+        if (!currentUser || currentUser.role !== "STUDENT") {
+            return res.status(403).json({ message: "Forbidden - Role check failed" });
         }
-    });
+
+        const { quizId } = req.params;
+        
+        const quiz = await quizDao.findQuizById(quizId);
+
+        if (!quiz) {
+            return res.status(404).json({ message: "Quiz not found" });
+        }
+
+        if (!quiz.published) {
+            return res.status(403).json({ message: "Forbidden - Quiz not published" });
+        }
+
+        const canTake = await attemptDao.canStudentTakeQuiz(currentUser._id, quizId, quiz.maxAttempts);
+        
+        if (!canTake) {
+            return res.status(403).json({ message: "Forbidden - Maximum attempts reached" });
+        }
+
+        const now = new Date();
+        
+        if (quiz.availableDate && now < quiz.availableDate) {
+            return res.status(403).json({ message: "Forbidden - Quiz not yet available" });
+        }
+        if (quiz.untilDate && now > quiz.untilDate) {
+            return res.status(403).json({ message: "Forbidden - Quiz no longer available" });
+        }
+        
+        const attempt = await attemptDao.startNewAttempt(currentUser._id, quizId);
+        res.status(201).json(attempt);
+        
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
 
     // get quiz attempt by ID
     app.get("/api/quiz-attempts/:attemptId", async (req, res) => {
-        try {
-            const { attemptId } = req.params;
-            const attempt = await attemptDao.findAttemptById(attemptId);
+    try {
+        const { attemptId } = req.params;
+        const attempt = await attemptDao.findAttemptById(attemptId);
 
-            if (!attempt) {
-                return res.status(404);
-            }
-        } catch (error) {
-            res.status(500);
+        if (!attempt) {
+            return res.status(404).json({ message: "Attempt not found" });
+        }
+        
+        res.json(attempt);
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
         }
     });
 
     // save answer during quiz (like auto-save)
-    app.put("/api/quiz-attepts/:attemptId/answer", async (req, res) => {
+    app.put("/api/quiz-attempts/:attemptId/answer", async (req, res) => {
         try {
             const { attemptId } = req.params;
             const { questionId, answer } = req.body;
@@ -71,7 +77,7 @@ export default function QuizAttemptRoutes(app) {
 
             res.json({ success: true});
         } catch (error) {
-            res.status(500);
+            res.status(500).json({ message: "Internal server error" });
         }
     });
 
@@ -82,7 +88,7 @@ export default function QuizAttemptRoutes(app) {
 
             const attempt = await attemptDao.findAttemptById(attemptId);
             if (!attempt) {
-                return res.status(404);
+                return res.status(404).json({ message: "Not found" });
             }
             const questions = await questionDao.findQuestionsForQuiz(attempt.quiz);
 
@@ -132,7 +138,7 @@ export default function QuizAttemptRoutes(app) {
             const gradedAttempt = await attemptDao.findAttemptById(attemptId);
             res.json(gradedAttempt);
         } catch (error) {
-            res.status(500);
+            res.status(500).json({ message: "Internal server error" });
         }
     });
 
@@ -153,7 +159,7 @@ export default function QuizAttemptRoutes(app) {
             }
             res.json(attempts);
         } catch (error) {
-            res.status(500);
+            res.status(500).json({ message: "Internal server error" });
         }
     });
 
@@ -168,7 +174,7 @@ export default function QuizAttemptRoutes(app) {
             const attempt = await attemptDao.findLatestAttemptForStudentAndQuiz(currentUser._id, quizId);
             res.json(attempt);
         } catch (error) {
-            res.status(500);
+            res.status(500).json({ message: "Internal server error" });
         }
     });
 
