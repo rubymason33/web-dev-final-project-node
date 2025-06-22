@@ -29,7 +29,3 @@ export function deleteQuiz(quizId) {
 export function publishQuiz(quizId) {
     return model.updateOne({ _id: quizId}, { $set: { published: true } });
 }
-
-export function findQuizById(quizId) {
-    return model.findById(quizId);
-}
